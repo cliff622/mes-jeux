@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes Jeux</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; background: #1e1e2e; color: white; margin: 0; padding: 20px; }
+  h1 { margin-top: 10px; }
+  #grille { display: grid; grid-template-columns: repeat(3, 100px); gap: 8px; justify-content: center; margin: 20px auto; }
+  .case { width: 100px; height: 100px; background: #313244; font-size: 48px; border: none; border-radius: 12px; color: white; cursor: pointer; }
+  .case:active { background: #45475a; }
+  #message { font-size: 22px; height: 30px; }
+  #rejouer { font-size: 18px; padding: 10px 24px; border: none; border-radius: 10px; background: #89b4fa; color: #1e1e2e; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Morpion</h1>
+<div id="message">Au tour de X</div>
+<div id="grille"></div>
+<button id="rejouer">Rejouer</button>
+
+<script>
+  let cases = Array(9).fill('');
+  let joueur = 'X';
+  let fini = false;
+  const grille = document.getElementById('grille');
+  const message = document.getElementById('message');
+  const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+  function dessiner() {
+    grille.innerHTML = '';
+    cases.forEach((valeur, i) => {
+      const b = document.createElement('button');
+      b.className = 'case';
+      b.textContent = valeur;
+      b.onclick = () => jouer(i);
+      grille.appendChild(b);
+    });
+  }
+
+  function jouer(i) {
+    if (fini || cases[i] !== '') return;
+    cases[i] = joueur;
+    const gagne = combos.some(c => c.every(n => cases[n] === joueur));
+    if (gagne) {
+      message.textContent = joueur + ' a gagné!';
+      fini = true;
+    } else if (cases.every(c => c !== '')) {
+      message.textContent = 'Match nul!';
+      fini = true;
+    } else {
+      joueur = joueur === 'X' ? 'O' : 'X';
+      message.textContent = 'Au tour de ' + joueur;
+    }
+    dessiner();
+  }
+
+  document.getElementById('rejouer').onclick = () => {
+    cases = Array(9).fill('');
+    joueur = 'X';
+    fini = false;
+    message.textContent = 'Au tour de X';
+    dessiner();
+  };
+
+  dessiner();
+</script>
+</body>
+</html>
