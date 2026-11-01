@@ -1,70 +1,143 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang='fr'>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset='UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
 <title>Mes Jeux</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; background: #1e1e2e; color: white; margin: 0; padding: 20px; }
-  h1 { margin-top: 10px; }
-  #grille { display: grid; grid-template-columns: repeat(3, 100px); gap: 8px; justify-content: center; margin: 20px auto; }
-  .case { width: 100px; height: 100px; background: #313244; font-size: 48px; border: none; border-radius: 12px; color: white; cursor: pointer; }
-  .case:active { background: #45475a; }
-  #message { font-size: 22px; height: 30px; }
-  #rejouer { font-size: 18px; padding: 10px 24px; border: none; border-radius: 10px; background: #89b4fa; color: #1e1e2e; cursor: pointer; }
+body{font-family:Arial,sans-serif;text-align:center;background:#1e1e2e;color:#fff;margin:0;padding:20px}
+button{font-size:18px;border:none;border-radius:12px;cursor:pointer}
+.menu button{display:block;width:80%;max-width:320px;margin:12px auto;padding:18px;background:#313244;color:#fff}
+.retour{background:#89b4fa;color:#1e1e2e;padding:8px 18px;margin-bottom:10px}
+.action{background:#89b4fa;color:#1e1e2e;padding:10px 24px;margin:6px}
+.cache{display:none}
+.msg{font-size:20px;min-height:28px;margin:10px}
+#grille{display:grid;grid-template-columns:repeat(3,100px);gap:8px;justify-content:center;margin:20px auto}
+.case{width:100px;height:100px;background:#313244;font-size:48px;color:#fff}
+#memoire{display:grid;grid-template-columns:repeat(4,70px);gap:8px;justify-content:center;margin:20px auto}
+.carte{width:70px;height:70px;background:#313244;font-size:34px;color:#fff}
+input{font-size:20px;width:100px;padding:8px;text-align:center;border-radius:8px;border:none}
 </style>
 </head>
 <body>
+
+<div id='menu' class='menu'>
+<h1>Mes Jeux</h1>
+<button onclick='ouvrir(0)'>❌⭕ Morpion</button>
+<button onclick='ouvrir(1)'>🧠 Memory</button>
+<button onclick='ouvrir(2)'>🔢 Devine le nombre</button>
+</div>
+
+<div id='jeu0' class='cache'>
+<button class='retour' onclick='retourMenu()'>← Menu</button>
 <h1>Morpion</h1>
-<div id="message">Au tour de X</div>
-<div id="grille"></div>
-<button id="rejouer">Rejouer</button>
+<div id='msgMorpion' class='msg'></div>
+<div id='grille'></div>
+<button class='action' onclick='initMorpion()'>Rejouer</button>
+</div>
+
+<div id='jeu1' class='cache'>
+<button class='retour' onclick='retourMenu()'>← Menu</button>
+<h1>Memory</h1>
+<div id='msgMem' class='msg'></div>
+<div id='memoire'></div>
+<button class='action' onclick='lancerMemoire()'>Rejouer</button>
+</div>
+
+<div id='jeu2' class='cache'>
+<button class='retour' onclick='retourMenu()'>← Menu</button>
+<h1>Devine le nombre</h1>
+<div id='msgNb' class='msg'></div>
+<input id='nb' type='number' inputmode='numeric'>
+<button class='action' onclick='deviner()'>Valider</button><br>
+<button class='action' onclick='lancerNombre()'>Rejouer</button>
+</div>
 
 <script>
-  let cases = Array(9).fill('');
-  let joueur = 'X';
-  let fini = false;
-  const grille = document.getElementById('grille');
-  const message = document.getElementById('message');
-  const combos = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const ids=['menu','jeu0','jeu1','jeu2'];
+function montrer(n){ids.forEach((x,i)=>document.getElementById(x).classList.toggle('cache',i!==n));}
+function retourMenu(){montrer(0);}
+function ouvrir(n){
+  montrer(n+1);
+  if(n===0)initMorpion();
+  if(n===1)lancerMemoire();
+  if(n===2)lancerNombre();
+}
 
-  function dessiner() {
-    grille.innerHTML = '';
-    cases.forEach((valeur, i) => {
-      const b = document.createElement('button');
-      b.className = 'case';
-      b.textContent = valeur;
-      b.onclick = () => jouer(i);
-      grille.appendChild(b);
-    });
-  }
+/* ----- MORPION ----- */
+let cases,joueur,fini;
+const combos=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+function initMorpion(){
+  cases=Array(9).fill('');joueur='X';fini=false;
+  document.getElementById('msgMorpion').textContent='Au tour de X';
+  dessinerMorpion();
+}
+function dessinerMorpion(){
+  const g=document.getElementById('grille');g.innerHTML='';
+  cases.forEach((v,i)=>{
+    const b=document.createElement('button');
+    b.className='case';b.textContent=v;b.onclick=()=>jouer(i);
+    g.appendChild(b);
+  });
+}
+function jouer(i){
+  if(fini||cases[i])return;
+  cases[i]=joueur;
+  const m=document.getElementById('msgMorpion');
+  if(combos.some(c=>c.every(n=>cases[n]===joueur))){m.textContent=joueur+' a gagné !';fini=true;}
+  else if(cases.every(c=>c)){m.textContent='Match nul !';fini=true;}
+  else{joueur=joueur==='X'?'O':'X';m.textContent='Au tour de '+joueur;}
+  dessinerMorpion();
+}
 
-  function jouer(i) {
-    if (fini || cases[i] !== '') return;
-    cases[i] = joueur;
-    const gagne = combos.some(c => c.every(n => cases[n] === joueur));
-    if (gagne) {
-      message.textContent = joueur + ' a gagné!';
-      fini = true;
-    } else if (cases.every(c => c !== '')) {
-      message.textContent = 'Match nul!';
-      fini = true;
-    } else {
-      joueur = joueur === 'X' ? 'O' : 'X';
-      message.textContent = 'Au tour de ' + joueur;
+/* ----- MEMORY ----- */
+let cartes,ouvertes,trouvees,bloque;
+function lancerMemoire(){
+  const e=['🐶','🐱','🦊','🐸','🐼','🦁','🐵','🐷'];
+  cartes=[...e,...e].sort(()=>Math.random()-0.5).map(v=>({v:v,etat:0}));
+  ouvertes=[];trouvees=0;bloque=false;
+  document.getElementById('msgMem').textContent='Trouve les paires';
+  dessinerMem();
+}
+function dessinerMem(){
+  const g=document.getElementById('memoire');g.innerHTML='';
+  cartes.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='carte';b.textContent=c.etat?c.v:'?';b.onclick=()=>cliquer(i);
+    g.appendChild(b);
+  });
+}
+function cliquer(i){
+  if(bloque||cartes[i].etat)return;
+  cartes[i].etat=1;ouvertes.push(i);dessinerMem();
+  if(ouvertes.length===2){
+    const a=ouvertes[0],b=ouvertes[1];
+    if(cartes[a].v===cartes[b].v){
+      trouvees++;ouvertes=[];
+      if(trouvees===8)document.getElementById('msgMem').textContent='Bravo, tout trouvé ! 🎉';
+    }else{
+      bloque=true;
+      setTimeout(()=>{cartes[a].etat=0;cartes[b].etat=0;ouvertes=[];bloque=false;dessinerMem();},800);
     }
-    dessiner();
   }
+}
 
-  document.getElementById('rejouer').onclick = () => {
-    cases = Array(9).fill('');
-    joueur = 'X';
-    fini = false;
-    message.textContent = 'Au tour de X';
-    dessiner();
-  };
-
-  dessiner();
+/* ----- DEVINE LE NOMBRE ----- */
+let secret,essais;
+function lancerNombre(){
+  secret=Math.floor(Math.random()*100)+1;essais=0;
+  document.getElementById('msgNb').textContent='Je pense à un nombre entre 1 et 100';
+  document.getElementById('nb').value='';
+}
+function deviner(){
+  const n=parseInt(document.getElementById('nb').value);
+  if(!n)return;
+  essais++;
+  const m=document.getElementById('msgNb');
+  if(n<secret)m.textContent='Plus grand ⬆️';
+  else if(n>secret)m.textContent='Plus petit ⬇️';
+  else m.textContent='Bravo ! Trouvé en '+essais+' essais 🎉';
+}
 </script>
 </body>
 </html>
